@@ -1,5 +1,6 @@
-CPATH='.:lib/hamcrest-core-1.3.jar:lib/junit-4.13.2.jar'
-FILE='ListExamples'
+CPATH='.:lib/hamcrest-core-1.3.jar:lib/junit-4.13.2.jar' # Change this to get the path to the junit and hamcrest
+FILE='ListExamples' # Change this to change the file to test
+TESTFILE='TestListExamples' # Change this to change the tester
 
 rm -rf student-submission
 git clone $1 student-submission
@@ -15,7 +16,7 @@ else
     exit
 fi
 
-cp ../TestListExamples.java ./
+cp ../$TESTFILE.java ./
 cp -r ../lib ./
 
 javac -cp $CPATH *.java 2>error-output.txt
@@ -28,12 +29,21 @@ else
     exit
 fi    
 
-java -cp $CPATH org.junit.runner.JUnitCore $FILE>output.txt 2>error-output.txt
+java -cp $CPATH org.junit.runner.JUnitCore $TESTFILE>output.txt 2>error-output.txt
 
 LINECOUNT=`grep -c '' output.txt`
 RESULTLINE=`grep 'Tests run:' output.txt`
-TESTSRUN=`echo $RESULTLINE | cut -d, -f1 | cut -d' ' -f3`
-FAILURES=`echo $RESULTLINE | cut -d, -f2 | cut -d' ' -f3`
+
+if [[ RESULTLINE -eq '' ]] 
+    then
+        RESULTLINE=`grep 'OK' output.txt`
+        TESTSRUN=`echo $RESULTLINE | cut -d'(' -f2 | cut -d' ' -f1`
+        FAILURES=0
+else
+    TESTSRUN=`echo $RESULTLINE | cut -d, -f1 | cut -d' ' -f3`
+    FAILURES=`echo $RESULTLINE | cut -d, -f2 | cut -d' ' -f3`
+fi
+
 TESTSPASSED=$(($TESTSRUN-$FAILURES))
 
 if [[ FAILURES -eq 0 ]]
